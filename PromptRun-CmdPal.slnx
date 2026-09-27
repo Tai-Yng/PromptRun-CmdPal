@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PromptRun.CmdPal/PromptRun.CmdPal.csproj" />
+    <Project Path="src/PromptRun.Core/PromptRun.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PromptRun.Tests/PromptRun.Tests.csproj" />
+  </Folder>
+</Solution>
