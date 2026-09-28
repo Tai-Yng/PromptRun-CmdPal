@@ -2,9 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PromptRun.CmdPal.Commands;
+using PromptRun.Community;
 using PromptRun.Library;
 using PromptRun.Sync;
 
@@ -20,7 +23,11 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
     private readonly PromptLibrary _library;
     private readonly SyncMessageSink _syncSink;
     private readonly GitHubSyncCoordinator _sync;
+    private CommunityPrompts? _community;
     private string _query = string.Empty;
+
+    private CommunityPrompts Community => _community ??=
+        new CommunityPrompts(new HttpClient(), Path.GetDirectoryName(_library.FilePath)!);
 
     public MainListPage(SettingsManager settings, PromptLibrary library, GitHubSyncCoordinator sync, SyncMessageSink syncSink)
     {
@@ -64,6 +71,11 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
                 });
             }
 
+            items.Add(new ListItem(new ExternalPromptsPage(_library, Community))
+            {
+                Title = "External prompt resources",
+                Subtitle = "community prompt search + prompt websites",
+            });
             items.Add(new ListItem(new OpenDataFolderCommand(_library))
             {
                 Title = "Open data folder",

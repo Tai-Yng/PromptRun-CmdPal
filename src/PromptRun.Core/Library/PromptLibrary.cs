@@ -162,6 +162,32 @@ public sealed class PromptLibrary : IDisposable
         Reload();
     }
 
+    /// <summary>
+    /// Appends a new entry (id/timestamps assigned here). Returns false when an entry with the
+    /// same title AND content already exists — used to avoid duplicate saves from community search.
+    /// </summary>
+    public bool Add(PromptEntry entry)
+    {
+        Reload();
+        PromptDocument doc;
+        lock (_gate)
+        {
+            if (_entries.Any(e => e.Title == entry.Title && e.Content == entry.Content))
+            {
+                return false;
+            }
+
+            entry.Id = Guid.NewGuid().ToString();
+            entry.CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            entry.UpdatedAt = entry.CreatedAt;
+            _entries.Add(entry);
+            doc = ToDocument(_entries);
+        }
+
+        SaveDocument(doc);
+        return true;
+    }
+
     private static PromptDocument ToDocument(List<PromptEntry> entries) => new()
     {
         Version = 1,
