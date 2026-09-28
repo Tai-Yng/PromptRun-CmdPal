@@ -31,7 +31,7 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
 
     public MainListPage(SettingsManager settings, PromptLibrary library, GitHubSyncCoordinator sync, SyncMessageSink syncSink)
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        Icon = IconHelpers.FromRelativePath("Assets\\icon.png");
         Title = "PromptRun";
         Name = "Open";
         PlaceholderText = "Search prompts...";

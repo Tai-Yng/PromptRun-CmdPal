@@ -19,7 +19,7 @@ public partial class PromptRunCommandsProvider : CommandProvider
     public PromptRunCommandsProvider()
     {
         DisplayName = "PromptRun";
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        Icon = IconHelpers.FromRelativePath("Assets\\icon.png");
 
         // One shared library/sync instance across the browse page and the fallback search.
         var settings = new SettingsManager();

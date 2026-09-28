@@ -19,7 +19,7 @@ internal sealed partial class PromptSearchPage : DynamicListPage
 
     public PromptSearchPage(PromptLibrary library)
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        Icon = IconHelpers.FromRelativePath("Assets\\icon.png");
         Title = "PromptRun";
         Name = "Search prompts";
         PlaceholderText = "Search prompts...";
