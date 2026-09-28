@@ -59,3 +59,7 @@ dotnet build src/PromptRun.CmdPal/PromptRun.CmdPal.csproj -p:Platform=x64 -p:Con
 ## License
 
 MIT
+
+## Troubleshooting
+
+- **Duplicate entries / broken icons after upgrading the extension**: the running CmdPal host keeps a stale registration per old version. Fully restart PowerToys (kill `Microsoft.CmdPal.UI.exe` too) or run "Reload" inside Command Palette.
