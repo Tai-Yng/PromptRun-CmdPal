@@ -13,15 +13,16 @@ namespace PromptRun.CmdPal;
 /// <summary>
 /// The single top-level list: no query shows the whole library in spec order followed by
 /// management actions; a query is filtered with multi-token AND and weighted ranking.
+/// Shares its library/sync instances with the root-level fallback search page.
 /// </summary>
 internal sealed partial class MainListPage : DynamicListPage, IDisposable
 {
     private readonly PromptLibrary _library;
-    private readonly SyncMessageSink _syncSink = new();
+    private readonly SyncMessageSink _syncSink;
     private readonly GitHubSyncCoordinator _sync;
     private string _query = string.Empty;
 
-    public MainListPage(SettingsManager settings)
+    public MainListPage(SettingsManager settings, PromptLibrary library, GitHubSyncCoordinator sync, SyncMessageSink syncSink)
     {
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
         Title = "PromptRun";
@@ -29,10 +30,10 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
         PlaceholderText = "Search prompts...";
         ShowDetails = true;
 
-        _library = new PromptLibrary(DataPaths.DefaultBasePath());
-        _sync = new GitHubSyncCoordinator(_library, () => settings.GetSyncConfig(), _syncSink.Receive);
+        _library = library;
+        _sync = sync;
+        _syncSink = syncSink;
         _library.Changed += () => RaiseItemsChanged(0);
-        _library.Initialize(createTemplateIfMissing: !RunDataImport.IsAvailable(_library.FilePath));
     }
 
     public void Dispose() => _library.Dispose();
@@ -40,7 +41,7 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         _query = newSearch;
-        RaiseItemsChanged();
+        RaiseItemsChanged(0);
     }
 
     public override IListItem[] GetItems()
@@ -51,7 +52,7 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
         {
             foreach (var entry in PromptSearch.All(_library.Entries))
             {
-                items.Add(PromptItem(entry));
+                items.Add(PromptItem(entry, _library));
             }
 
             if (RunDataImport.IsAvailable(_library.FilePath))
@@ -83,19 +84,19 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
         {
             foreach (var entry in PromptSearch.Search(_library.Entries, _query))
             {
-                items.Add(PromptItem(entry));
+                items.Add(PromptItem(entry, _library));
             }
         }
 
         return items.ToArray();
     }
 
-    private ListItem PromptItem(PromptEntry entry)
+    internal static ListItem PromptItem(PromptEntry entry, PromptLibrary library)
     {
         var tags = entry.Tags.Count > 0 ? $" | {string.Join(", ", entry.Tags)}" : string.Empty;
         var placeholder = PromptSearch.HasPlaceholder(entry) ? " | {{placeholder}}" : string.Empty;
 
-        return new ListItem(new CopyPromptCommand(entry, _library))
+        return new ListItem(new CopyPromptCommand(entry, library))
         {
             Title = entry.Title,
             Subtitle = $"{entry.UseCount} uses{tags}{placeholder}",
