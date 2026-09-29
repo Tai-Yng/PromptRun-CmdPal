@@ -23,6 +23,7 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
     private readonly PromptLibrary _library;
     private readonly SyncMessageSink _syncSink;
     private readonly GitHubSyncCoordinator _sync;
+    private readonly SettingsManager _settings;
     private CommunityPrompts? _community;
     private string _query = string.Empty;
 
@@ -37,6 +38,7 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
         PlaceholderText = "Search prompts...";
         ShowDetails = true;
 
+        _settings = settings;
         _library = library;
         _sync = sync;
         _syncSink = syncSink;
@@ -90,6 +92,11 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
             {
                 Title = "Pull from GitHub",
                 Subtitle = "Replace the local file with the remote prompts.json (creates a .bak backup)",
+            });
+            items.Add(new ListItem(new CommandItem(_settings.Settings.SettingsPage))
+            {
+                Title = "Settings",
+                Subtitle = "GitHub repository and PAT for sync",
             });
         }
         else
