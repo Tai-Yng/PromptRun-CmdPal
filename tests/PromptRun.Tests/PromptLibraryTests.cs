@@ -143,3 +143,57 @@ public sealed class PromptLibraryTests : IDisposable
         Assert.False(_library.IncrementUseCount("no-such-id"));
     }
 }
+
+public sealed class PromptCrudTests : IDisposable
+{
+    private readonly string _dir;
+    private readonly PromptLibrary _library;
+
+    public PromptCrudTests()
+    {
+        _dir = Path.Combine(Path.GetTempPath(), "promptrun-crud-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_dir);
+        _library = new PromptLibrary(_dir);
+        _library.Initialize();
+    }
+
+    public void Dispose()
+    {
+        _library.Dispose();
+        try { Directory.Delete(_dir, recursive: true); } catch (IOException) { }
+    }
+
+    [Fact]
+    public void Update_ChangesFields_BumpsUpdatedAt_KeepsId()
+    {
+        var entry = _library.Entries[0];
+        var id = entry.Id;
+        var oldUpdatedAt = entry.UpdatedAt;
+        Thread.Sleep(5);
+
+        Assert.True(_library.Update(id, "New Title", "New Content", ["daily", "work"]));
+
+        var updated = Assert.Single(_library.Entries, e => e.Id == id);
+        Assert.Equal("New Title", updated.Title);
+        Assert.Equal("New Content", updated.Content);
+        Assert.Equal(["daily", "work"], updated.Tags);
+        Assert.True(updated.UpdatedAt > oldUpdatedAt);
+        Assert.True(updated.CreatedAt >= entry.CreatedAt);
+    }
+
+    [Fact]
+    public void Update_UnknownId_ReturnsFalse()
+    {
+        Assert.False(_library.Update("no-such-id", "t", "c", []));
+    }
+
+    [Fact]
+    public void Delete_RemovesEntry_UnknownIdReturnsFalse()
+    {
+        var id = _library.Entries[0].Id;
+
+        Assert.True(_library.Delete(id));
+        Assert.DoesNotContain(_library.Entries, e => e.Id == id);
+        Assert.False(_library.Delete(id));
+    }
+}

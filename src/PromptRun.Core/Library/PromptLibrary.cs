@@ -188,6 +188,41 @@ public sealed class PromptLibrary : IDisposable
         return true;
     }
 
+    /// <summary>Removes an entry by id. Returns false when the id no longer exists.</summary>
+    public bool Delete(string id)
+    {
+        Reload();
+        lock (_gate)
+        {
+            if (_entries.RemoveAll(e => e.Id == id) == 0)
+            {
+                return false;
+            }
+            SaveDocument(ToDocument(_entries));
+        }
+        return true;
+    }
+
+    /// <summary>Updates title/content/tags of an entry, keeping id/favorite/useCount/createdAt and bumping updatedAt.</summary>
+    public bool Update(string id, string title, string content, List<string> tags)
+    {
+        Reload();
+        lock (_gate)
+        {
+            var entry = _entries.FirstOrDefault(e => e.Id == id);
+            if (entry is null)
+            {
+                return false;
+            }
+            entry.Title = title;
+            entry.Content = content;
+            entry.Tags = tags;
+            entry.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            SaveDocument(ToDocument(_entries));
+        }
+        return true;
+    }
+
     private static PromptDocument ToDocument(List<PromptEntry> entries) => new()
     {
         Version = 1,

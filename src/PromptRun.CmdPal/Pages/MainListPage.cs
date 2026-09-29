@@ -61,8 +61,14 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
         {
             foreach (var entry in PromptSearch.All(_library.Entries))
             {
-                items.Add(PromptItem(entry, _library));
+                items.Add(PromptItem(entry, _library, () => RaiseItemsChanged(0)));
             }
+
+            items.Add(new ListItem(new PromptFormPage(_library))
+            {
+                Title = "New prompt",
+                Subtitle = "title, content and tags — saved straight into your library",
+            });
 
             if (RunDataImport.IsAvailable(_library.FilePath))
             {
@@ -103,14 +109,14 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
         {
             foreach (var entry in PromptSearch.Search(_library.Entries, _query))
             {
-                items.Add(PromptItem(entry, _library));
+                items.Add(PromptItem(entry, _library, () => RaiseItemsChanged(0)));
             }
         }
 
         return items.ToArray();
     }
 
-    internal static ListItem PromptItem(PromptEntry entry, PromptLibrary library)
+    internal static ListItem PromptItem(PromptEntry entry, PromptLibrary library, Action onChanged)
     {
         var tags = entry.Tags.Count > 0 ? $" | {string.Join(", ", entry.Tags)}" : string.Empty;
         var placeholder = PromptSearch.HasPlaceholder(entry) ? " | {{placeholder}}" : string.Empty;
@@ -124,6 +130,14 @@ internal sealed partial class MainListPage : DynamicListPage, IDisposable
                 Title = entry.Title,
                 Body = entry.Content,
             },
+            MoreCommands =
+            [
+                new CommandContextItem(new PromptFormPage(library, entry, onChanged))
+                {
+                    Title = "Edit",
+                },
+                new CommandContextItem(new DeletePromptCommand(library, entry, onChanged)),
+            ],
         };
     }
 }

@@ -45,7 +45,7 @@ internal sealed partial class PromptSearchPage : DynamicListPage
         var items = new List<IListItem>();
         foreach (var entry in PromptSearch.Search(_library.Entries, _query))
         {
-            items.Add(MainListPage.PromptItem(entry, _library));
+            items.Add(MainListPage.PromptItem(entry, _library, () => RaiseItemsChanged(0)));
         }
         return items.ToArray();
     }
