@@ -25,10 +25,7 @@ public sealed partial class CopyPromptCommand : InvokableCommand
     {
         try
         {
-            var package = new Windows.ApplicationModel.DataTransfer.DataPackage();
-            package.SetText(_entry.Content);
-            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(package);
-            Windows.ApplicationModel.DataTransfer.Clipboard.Flush();
+            ClipboardHelper.SetText(_entry.Content);
         }
         catch (Exception ex)
         {
